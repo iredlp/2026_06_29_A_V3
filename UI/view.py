@@ -20,8 +20,8 @@ class View(ft.UserControl):
         self._title = ft.Text("TdP  - Esame del 29 Giugno 2026", color="blue", size=24)
         self._page.controls.append(self._title)
 
-
         self._ddCountry = ft.Dropdown(label="Country")
+        self._controller.fillDDCountry()
 
         self._btnCreaGrafo = ft.ElevatedButton(text="Crea grafo",
                                                on_click=self._controller.handleCreaGrafo)
