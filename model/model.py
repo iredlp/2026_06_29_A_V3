@@ -69,6 +69,9 @@ class Model:
     def get_num_edges(self) -> int:
         return self._grafo.number_of_edges()
 
+    def getAllNodes(self, paese):
+        return DAO.getAllNodes(paese)
+
     def getTop5Archi(self):
        # return sorted(self._grafo.edges(data=True), key=lambda x: x[2]["weight"], reverse=True)[:10]
        archi = self._grafo.edges(data=True)
@@ -100,3 +103,70 @@ class Model:
             c1, c2, dati = arco
             print(c1, "->", c2, "peso:", dati["weight"],
                   "tipo:", type(dati["weight"]))
+
+    def getGruppoClienti(self, start_node):
+        self._best_path = []
+        self._best_score = -1
+
+        # Il percorso parziale parte con il nodo selezionato
+        parziale = [start_node]
+        self._ricorsione(parziale)
+        return self._best_path, self._best_score
+
+    def _ricorsione(self, parziale):
+
+        # Se il cammino attuale è più lungo del migliore
+        if len(parziale) > len(self._best_path):
+            self._best_path = list(parziale)
+            self._best_score = self._score(parziale)
+
+        ultimo = parziale[-1]
+
+       # if len(parziale) == k:
+      #  score = sum(len(a.fatturato_tot) for a in parziale)
+      #  if score > self._best_score:
+            #self._best_score = score
+          #  self._best_group = list(parziale)
+           # return
+        #candidati = set()
+        for candidato in self._grafo.successors(ultimo):
+            #candidati.update(self._grafo.successors(ultimo))
+            #candidati.update(self._grafo.predecessors(cliente))
+
+            if candidato in parziale:
+                continue
+                # Il fatturato deve essere non crescente
+            if candidato.fatturato_tot > ultimo.fatturato_tot:
+                continue
+
+            # conto quanti attori già nel gruppo sono adiacenti
+            contatti = 0
+
+            for actor in parziale:
+                if (self._grafo.has_edge(actor, candidato) or
+                        self._grafo.has_edge(candidato, actor)):
+                    contatti += 1
+
+                # for attore in parziale:
+            # if (self._grafo.has_edge(attore, candidato) or
+            #  self._grafo.has_edge(candidato, attore)):
+            # contatti += 1
+
+            parziale.append(candidato)
+            # Chiamata ricorsiva passando il nuovo arco come riferimento
+            self._ricorsione(parziale)
+            # BACKTRACKING: annullo l'ultima mossa
+            parziale.pop()
+
+    def _score(self, parziale):
+        # esplora la soluz parzila ed aggiunge i pesi
+        score = 0
+        for cliente in parziale:
+            score += cliente.fatturato_tot #SOMMO DIRETTAMENTE, NON CHIEDE LA LUNGHEZZA
+        return score
+
+
+
+
+
+
