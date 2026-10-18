@@ -41,7 +41,7 @@ class Controller:
             self._view._txt_result.controls.append(
                 ft.Text(f"Errore durante la creazione del grafo: {ex}", color="red")
             )
-       # self.fillDDArtisti()
+        self.fillDDClienti()
         self._view.update_page()
 
     def handleStampaInfo(self,e):
@@ -67,9 +67,65 @@ class Controller:
                     f"(peso: {dati['weight']})"  )
                 )
         self._view.update_page()
+    def fillDDClienti(self):
+        try:
+            paese = self._view._ddCountry.value
+            clienti = self._model.getAllNodes(paese)
+            for y in clienti:
+                self._view._ddClienti.options.append(ft.dropdown.Option(key=y.CustomerId,
+                                                                       text=f"{y.FirstName} {y.LastName}"))
+            self._view.update_page()
 
-
-
+        except Exception as ex:
+            self._view._txt_result.controls.append(ft.Text(f"Errore nel recupero dei CLIENTI: {ex}", color="red"))
+            self._view.update_page()
 
     def handleSequenza(self,e):
-        pass
+        self._view._txt_result.controls.clear()
+      #  k = self._view._txtInN.value
+        # qui dovremmo fare i solti controlli sulla validità
+
+      #  try:
+          #  kInt = int(k)
+        #except Exception as ex:
+           # self._view._txt_result.controls.append(
+               # ft.Text(f"Errore ! devi inserire un intero per procedere: {ex}", color="red") )
+           # self._view.update_page()
+           # return
+        #if kInt <= 0:
+          #  self._view.create_alert(
+              #  "N deve essere un intero positivo.", color="red")
+           # return
+
+        # recupero l'attore selezionato dal Dropdown
+        id_cliente = int(self._view._ddClienti.value)
+        start_node = self._model._idMapP[id_cliente]
+
+        if self._view._ddClienti.value is None:
+            self._view.create_alert("Selezionare prima un CLIENTE di partenza.", color="red")
+            return
+
+        listClienti, fatturato_complessivo = self._model.getGruppoClienti(start_node)
+
+        if listClienti is None:
+            self._view._txt_result.controls.clear()
+            self._view._txt_result.controls.append(ft.Text(
+                f"Non ci sono abbastanza comoonenti connesse per trovare il cammino con i clienti", color="red"))
+            return
+        self._view._txt_result.controls.clear()
+        self._view._txt_result.controls.append(ft.Text(
+            f" Di seguito il Gruppo di  CLIENTI , con fatturato decrescente:", color="green"))
+
+        for cliente in listClienti:
+            self._view._txt_result.controls.append(ft.Text(f"{cliente.FirstName} {cliente.LastName} - "
+            f"Fatturato: {cliente.fatturato_tot:.2f}"))
+
+        self._view._txt_result.controls.append(
+            ft.Text(f"Numero archi: {len(listClienti) - 1}", color= "organge")
+        )
+
+        self._view._txt_result.controls.append(
+            ft.Text(f"Fatturato complessivo: {fatturato_complessivo:.2f}", color= "organge")
+        )
+        self._view.update_page()
+
